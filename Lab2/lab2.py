@@ -23,7 +23,8 @@ def make_gaussian_kernel(ksize, sigma):
     '''
     
     # YOUR CODE HERE
-
+    x, y = np.mgrid[0: ksize, 0: ksize]
+    kernel = np.exp(((x - ksize // 2) ** 2 + (y - ksize // 2) ** 2) / (-2 * (sigma ** 2)))
     # END
 
     return kernel / kernel.sum()
@@ -161,6 +162,18 @@ def estimate_gradients(original_img, display=True):
     
  
     '''
+    img = original_img / 255
+    Kx = [[1, 2, 1],
+          [0, 0, 0],
+          [-1, -2, -1]]
+    Ky = [[1, 0, -1],
+          [2, 0, -2],
+          [1, 0, -1]]
+    dx = cs4243_filter(img, np.array(Kx))
+    dy = cs4243_filter(img, np.array(Ky))
+
+    d_mag = np.sqrt(dx ** 2 + dy ** 2)
+    d_angle = np.arctan2(dy, dx)
 
     # END
     if display:
@@ -250,7 +263,22 @@ def non_maximum_suppression(d_mag, d_angle, display=True):
     d_angle_180 = d_angle * 180/np.pi
  
     # YOUR CODE HERE
-
+    for i in range(1, d_mag.shape[0] - 1):
+        for j in range(1, d_mag.shape[1] - 1):
+            mag = d_mag[i, j]
+            angle = d_angle_180[i, j]
+            if -22.5 <= angle < 22.5 or angle > 157.5 or angle < -157.5:
+                if mag >= d_mag[i - 1, j] and mag >= d_mag[i + 1, j]:
+                    out[i, j] = mag
+            elif 22.5 <= angle < 67.5 or -157.5 <= angle < -112.5:
+                if mag >= d_mag[i - 1, j - 1] and mag >= d_mag[i + 1, j + 1]:
+                    out[i, j] = mag
+            elif 112.5 <= angle < 157.5 or -67.5 <= angle < -22.5:
+                if mag >= d_mag[i - 1, j + 1] and mag >= d_mag[i + 1, j - 1]:
+                    out[i, j] = mag
+            elif 67.5 <= angle < 112.5 or -112.5 <= angle < -67.5:
+                if mag >= d_mag[i, j - 1] and mag >= d_mag[i, j + 1]:
+                    out[i, j] = mag
     # END
     if display:
         _ = plt.figure(figsize=(10,10))
@@ -280,7 +308,13 @@ def double_thresholding(inp, perc_weak=0.1, perc_strong=0.3, display=True):
     weak_edges = strong_edges = None
     
     # YOUR CODE HERE
-    
+    max_val = np.max(inp)
+    min_val = np.min(inp)
+    range = max_val - min_val
+    high_threshold = min_val + perc_strong * range
+    low_threshold = min_val + perc_weak * range
+    weak_edges = np.logical_and(inp > low_threshold, inp < high_threshold)
+    strong_edges = inp > high_threshold
     # END
     
     if display:
