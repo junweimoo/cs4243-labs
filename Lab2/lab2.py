@@ -354,7 +354,20 @@ def edge_linking(weak, strong, n=200, display=True):
     out = None
     
     # YOUR CODE HERE
-    
+    for _ in range(n):
+        edge = np.argwhere(weak)
+        hasStrong = False
+
+        for i, j in edge:
+            neighbor = strong[i - 1:i + 2, j - 1:j + 2]
+            if (neighbor.sum() > 0):
+                strong[i, j] = True
+                weak[i, j] = False
+                hasStrong = True
+        if not hasStrong:
+            break
+
+    out = s = strong
     # END
     if display:
         _ = plt.figure(figsize=(10,10))
@@ -375,7 +388,16 @@ def hough_vote_lines(img):
     :return thetas: theta values array
     '''
     # YOUR CODE HERE
-
+    diag = round(np.sqrt(img.shape[0] ** 2 + img.shape[1] ** 2))
+    distances = np.arange(-diag, diag, 1)
+    thetas = np.arange(0, np.pi, np.pi / 180)
+    edge = np.argwhere(img)
+    rho_range = diag * 2
+    A = np.zeros((rho_range, 180))
+    for x, y in edge:
+        for theta_idx, theta in enumerate(thetas):
+            rho = round(np.cos(theta) * x + np.sin(theta) * y)
+            A[rho + diag, theta_idx] += 1
     # END
             
     return A, distances, thetas
