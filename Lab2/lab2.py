@@ -213,6 +213,37 @@ def non_maximum_suppression_interpol(d_mag, d_angle, display=True):
     d_angle_180 = d_angle * 180/np.pi
     
     # YOUR CODE HERE
+    for i in range(1, d_mag.shape[0] - 1):
+        for j in range(1, d_mag.shape[1] - 1):
+            mag = d_mag[i, j]
+            angle = d_angle_180[i, j]
+            if angle < 0:
+                angle += 180
+            
+            if angle < 45:
+                ratio = math.tan(angle * math.pi / 180)
+                neighbour_top = ratio * d_mag[i-1, j-1] + (1 - ratio) * d_mag[i-1, j]
+                neighbour_bottom = ratio * d_mag[i+1, j+1] + (1 - ratio) * d_mag[i+1, j]
+                if mag >= neighbour_top and mag >= neighbour_bottom:
+                    out[i, j] = mag
+            elif angle < 90:
+                ratio = math.tan((90 - angle) * math.pi / 180)
+                neighbour_top = ratio * d_mag[i-1, j-1] + (1 - ratio) * d_mag[i, j-1]
+                neighbour_bottom = ratio * d_mag[i+1, j+1] + (1 - ratio) * d_mag[i, j+1]
+                if mag >= neighbour_top and mag >= neighbour_bottom:
+                    out[i, j] = mag
+            elif angle < 135:
+                ratio = math.tan((angle - 90) * math.pi / 180)
+                neighbour_top = ratio * d_mag[i-1, j+1] + (1 - ratio) * d_mag[i, j+1]
+                neighbour_bottom = ratio * d_mag[i+1, j-1] + (1 - ratio) * d_mag[i, j-1]
+                if mag >= neighbour_top and mag >= neighbour_bottom:
+                    out[i, j] = mag
+            else:
+                ratio = math.tan((180 - angle) * math.pi / 180)
+                neighbour_top = ratio * d_mag[i-1, j+1] + (1 - ratio) * d_mag[i-1, j]
+                neighbour_bottom = ratio * d_mag[i+1, j-1] + (1 - ratio) * d_mag[i+1, j]
+                if mag >= neighbour_top and mag >= neighbour_bottom:
+                    out[i, j] = mag
 
     # END
     if display:
