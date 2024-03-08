@@ -519,7 +519,7 @@ def hough_vote_circles(img, radius = None):
         # 3.3 For each edge point:
         #    Center the mask over that point and update the accumulator array
         for x, y in edge:
-            A[radius - R_max, x + R_max - radius: x + R_max + radius + 1,
+            A[radius - R_min, x + R_max - radius: x + R_max + radius + 1,
             y + R_max - radius: y + R_max + radius + 1] += circular_mask
 
     # END
