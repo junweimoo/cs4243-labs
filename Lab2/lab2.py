@@ -499,21 +499,28 @@ def hough_vote_circles(img, radius = None):
     #1. Initializing accumulator array A.
     #   A should have three dimensions, in this order: radius, x coordinate, y coordinate
     #   Remember padding
-   
-    #2. Extracting all edge coordinates
- 
-    
-    #3. For each radius:
+    A = np.zeros((1 + R_max - R_min, 1 + 2 * R_max + h, 1 + 2 * R_max + w))
+    # 2. Extracting all edge coordinates
+    edge = np.argwhere(img)
 
-        
-        #3.1 Creating a circular mask
+    # 3. For each radius:
+    R = np.arange(R_min, R_max + 1)
+    X = np.arange(-R_max, h + R_max + 1)
+    Y = np.arange(-R_max, w + R_max + 1)
 
-        
-        #3.2 Compute the number of non_zero values on the mask
- 
-        
-        #3.3 For each edge point:
+    for radius in R:
+        # 3.1 Creating a circular mask
+        circular_mask = np.zeros((1 + 2 * radius, 1 + 2 * radius))
+        x_coord, y_coord = circle_perimeter(radius, radius, radius)
+        circular_mask[x_coord, y_coord] += 1
+
+        # 3.2 Compute the number of non_zero values on the mask
+
+        # 3.3 For each edge point:
         #    Center the mask over that point and update the accumulator array
+        for x, y in edge:
+            A[radius - R_max, x + R_max - radius: x + R_max + radius + 1,
+            y + R_max - radius: y + R_max + radius + 1] += circular_mask
 
     # END
    
