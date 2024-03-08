@@ -556,6 +556,22 @@ def hough_vote_circles_grad(img, d_angle, radius = None):
         [R_min,R_max] = radius
     
     # YOUR CODE HERE
+    A = np.zeros((1 + R_max - R_min, 1 + 2 * R_max + h, 1 + 2 * R_max + w))
+    edge = np.argwhere(img)
+    
+    R = np.arange(R_min, R_max + 1)
+    X = np.arange(-R_max, h + R_max + 1)
+    Y = np.arange(-R_max, w + R_max + 1)
+
+    for radius in R:
+        for x, y in edge:
+            theta = d_angle[x, y]
+            a1 = round(x + radius * math.cos(theta))
+            b1 = round(y + radius * math.sin(theta))
+            a2 = round(x - radius * math.cos(theta))
+            b2 = round(y - radius * math.sin(theta))
+            A[radius - R_min, a1 + R_max, b1 + R_max] += 1
+            A[radius - R_min, a2 + R_max, b2 + R_max] += 1
 
     # END
     return A, R, X, Y
