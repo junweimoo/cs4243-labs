@@ -511,7 +511,11 @@ def shift_sift_descriptor(desc):
     '''
     
     """ Your code starts here """
-    
+    res = np.array(desc, copy=True).reshape((4, 4, 8))
+    res = np.flipud(res)
+    res = np.reshape(res, (16, 8))
+    res[:, 1:] = res[:, -1:0:-1]
+    res = np.reshape(res, (128,))
     """ Your code ends here """
     
     return res
@@ -524,7 +528,13 @@ def create_mirror_descriptors(img):
     '''
     
     """ Your code starts here """
-    
+    kps, descs, angles, sizes = compute_cv2_descriptor(img)
+    mir_descs = []
+    for desc in descs:
+        mir_desc = shift_sift_descriptor(desc)
+        mir_descs.append(mir_desc)
+
+    mir_descs = np.array(mir_descs)
     """ Your code ends here """
     
     return kps, descs, sizes, angles, mir_descs
@@ -541,7 +551,16 @@ def match_mirror_descriptors(descs, mirror_descs, threshold = 0.7):
 
     
     """ Your code starts here """
-    
+    for i, matches in three_matches:
+        filtered_matches = []
+        for match in matches:
+            if match[0] != i:
+                filtered_matches.append(match)
+        filtered_matches.sort(key=lambda x: x[1])
+        first, second = filtered_matches[:2]
+        if first[1] / second[1] < threshold:
+            match_result.append((i, first[0]))
+    match_result = np.array(match_result)
     """ Your code ends here """
     
     return match_result
@@ -557,7 +576,13 @@ def find_symmetry_lines(matches, kps):
     thetas = []
     
     """ Your code starts here """
-    
+    for i, j in matches:
+        a, b = kps[i], kps[j]
+        x, y = midpoint(a, b)
+        angle = angle_with_x_axis(a, b)
+        rho = x * np.sin(angle) + y * np.cos(angle)
+        thetas.append(angle)
+        rhos.append(rho)
     """ Your code ends here """
     
     return rhos, thetas
