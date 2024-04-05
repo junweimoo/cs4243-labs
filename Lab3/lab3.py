@@ -318,13 +318,13 @@ def compute_homography(src, dst):
   
     """ Your code starts here """
     def normalize_points(points):
-        centroid = np.mean(points, axis=0)
-        shifted_points = points - centroid
-        scale = np.sqrt(2) / np.mean(np.sqrt(np.sum(shifted_points**2, axis=1)))
-        normalized_points = shifted_points / scale
-        T = np.array([[scale, 0, -scale * centroid[0]],
-                      [0, scale, -scale * centroid[1]],
-                      [0, 0, 1]])
+        mean = np.mean(points, axis=0)
+        std = np.std(points, axis=0)
+
+        T = np.array([[1 / std[0], 0, -mean[0] / std[0]],
+                   [0, 1 / std[1], -mean[1] / std[1]],
+                   [0, 0, 1]])
+        normalized_points = transform_homography(points, T)
         return normalized_points, T
     
     src_normalized, T_src = normalize_points(src)
@@ -336,7 +336,7 @@ def compute_homography(src, dst):
         x_prime, y_prime = dst_normalized[i]
         A.append([-x, -y, -1,  0,  0,  0, x*x_prime, y*x_prime, x_prime])
         A.append([ 0,  0,  0, -x, -y, -1, x*y_prime, y*y_prime, y_prime])
-    A = np.array(A)
+    A = np.array(A, dtype=np.float64)
     
     U, S, Vt = np.linalg.svd(A)
     h = Vt[-1] / Vt[-1, -1] 
@@ -377,7 +377,7 @@ def ransac_homography(keypoints1, keypoints2, matches, sampling_ratio=0.5, n_ite
     matched1_unpad = keypoints1[matches[:,0]]
     matched2_unpad = keypoints2[matches[:,1]]
 
-    max_inliers = np.zeros(N)
+    max_inliers = np.zeros(N, dtype=int)
     n_inliers = 0
 
     # RANSAC iteration start
@@ -388,7 +388,7 @@ def ransac_homography(keypoints1, keypoints2, matches, sampling_ratio=0.5, n_ite
 
         H = compute_homography(matched1_unpad[indices], matched2_unpad[indices])
         keypoints1_proj = transform_homography(matched1_unpad, H)
-        
+
         distances = np.sqrt(np.sum((keypoints1_proj - matched2_unpad) ** 2, axis=1))
         inliers = distances < delta
         n_inliers_current = np.sum(inliers)
