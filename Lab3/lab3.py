@@ -597,7 +597,21 @@ def hough_vote_mirror(matches, kps, im_shape, window=1, threshold=0.5, num_lines
     rhos, thetas = find_symmetry_lines(matches, kps)
     
     """ Your code starts here """
-    
+    one_degree = np.pi / 180
+    theta_bins = np.arange(0, 2 * np.pi, one_degree)
+    diagonal = int(np.sqrt(im_shape[0] ** 2 + im_shape[1] ** 2))
+    rho_bins = np.arange(-diagonal, diagonal)
+    accumulator = np.zeros((360, 2 * diagonal))
+
+    for i in range(len(rhos)):
+        theta_idx = int(thetas[i] / np.pi * 180)
+        rho_idx = int(rhos[i] + diagonal)
+        accumulator[theta_idx - 1][rho_idx] += 1
+
+    peak_indices = find_peak_params(accumulator, [theta_bins, rho_bins], window, threshold)
+    num_lines = min(num_lines, len(peak_indices[0]))
+    theta_values = peak_indices[1][:num_lines]
+    rho_values = peak_indices[2][:num_lines]
     """ Your code ends here """
     
     return rho_values, theta_values
