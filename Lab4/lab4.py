@@ -206,7 +206,17 @@ class Textonization:
             
         """
         # Your code starts here #
+        responses = []
+        for img in training_imgs:
+            response = features_from_filter_bank(img, self.kernels)
+            responses.append(response.reshape(-1, 17))
+        responses = np.vstack(responses)
+        # print(responses.shape)
         
+        kmeans = MiniBatchKMeans(n_clusters=self.n_clusters, random_state=88)
+        kmeans.fit(responses)
+        self.cluster_centers = kmeans.cluster_centers_
+        # print(self.cluster_centers.shape)
         # Your code ends here #
         
         pass
@@ -222,7 +232,11 @@ class Textonization:
         
         """
         # Your code starts here #
-
+        responses = features_from_filter_bank(img, self.kernels)
+        responses = responses.reshape(-1, 17)
+        tree = KDTree(self.cluster_centers)
+        _, indices = tree.query(responses)
+        textons = indices.reshape(img.shape[0], img.shape[1], 1)
         # Your code ends here #
         
         return textons
