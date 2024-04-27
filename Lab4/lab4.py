@@ -298,11 +298,7 @@ def histogram_per_pixel(textons, window_size):
     
     """
     h, w, d = textons.shape
-<<<<<<< HEAD
-    img = textons.reshape(h,w,1).astype(np.float32)
-=======
     textons = textons.reshape(h,w,1).astype(np.float32)
->>>>>>> refs/remotes/origin/main
     hists = np.zeros((h,w,200))
     for i in range(h):
         for j in range(w):
