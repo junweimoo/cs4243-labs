@@ -55,22 +55,27 @@ def calcOpticalFlowHS(prevImg: np.array, nextImg: np.array, param_lambda: float,
     u = np.zeros(prevImg.shape)
     v = np.zeros(prevImg.shape)
 
-    kernel = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]]) / 4
+    kernel = np.array([[0, 1, 0], 
+                       [1, 0, 1], 
+                       [0, 1, 0]]) / 4
+    # kernel = np.array([[1/12, 1/6, 1/12],
+    #                         [1/6, 0, 1/6],
+    #                         [1/12, 1/6, 1/12]], float)
 
     # Iterate until convergence
     i = 0
-    for _ in range(1000):
+    for i in range(1000):
         u_avg = cv2.filter2D(u, -1, kernel)
         v_avg = cv2.filter2D(v, -1, kernel)
 
+        # factor = 5 * 2**(-0.003 * i)
+        factor = 1
+
         # Compute flow updates
         p = Ix * u_avg + Iy * v_avg + It
-        u_numerator = p * Ix
-        v_numerator = p * Iy
-        denominator = param_lambda**-1 + Ix**2 + Iy**2
-
-        u_delta = u_numerator / denominator
-        v_delta = v_numerator / denominator
+        denominator = (param_lambda*factor)**-1 + Ix**2 + Iy**2
+        u_delta = p * Ix / denominator
+        v_delta = p * Iy / denominator
 
         u_prev = u
         v_prev = v
@@ -81,9 +86,11 @@ def calcOpticalFlowHS(prevImg: np.array, nextImg: np.array, param_lambda: float,
         i += 1
 
         # Check for convergence
-        if np.linalg.norm(u - u_prev, 2) < param_delta and np.linalg.norm(v - v_prev, 2) < param_delta:
+        u_diff = np.linalg.norm(u - u_prev, 2)
+        v_diff = np.linalg.norm(v - v_prev, 2)
+        # print(i, np.linalg.norm(u), np.linalg.norm(v))
+        if u_diff < param_delta and v_diff < param_delta:
             break
-    print(i)
 
     flow = np.stack((u, v), axis=-1)
 
@@ -291,7 +298,11 @@ def histogram_per_pixel(textons, window_size):
     
     """
     h, w, d = textons.shape
+<<<<<<< HEAD
     img = textons.reshape(h,w,1).astype(np.float32)
+=======
+    textons = textons.reshape(h,w,1).astype(np.float32)
+>>>>>>> refs/remotes/origin/main
     hists = np.zeros((h,w,200))
     for i in range(h):
         for j in range(w):
@@ -301,7 +312,7 @@ def histogram_per_pixel(textons, window_size):
             right = np.clip(j + window_size//2+1, 0, w-1)
             #hist, edge = np.histogram(img[top:bot,left:right], bins=np.arange(201), density=False)
             #hist,_ = np.histogram(img, np.arange(0, 256), normed=True)
-            hist = cv2.calcHist([img[top:bot,left:right]],[0],None,[200],[0,200])
+            hist = cv2.calcHist([textons[top:bot,left:right]],[0],None,[200],[0,200])
             hists[i,j]=hist.reshape((200,))
     
     return hists
