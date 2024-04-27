@@ -120,7 +120,7 @@ def kmeans(n_clusters, image):
     t0 = time()
     image_array_sample = shuffle(image_array, random_state=0, n_samples=1_000)
     # image_array_sample = image_array
-    kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0, n_init='auto').fit(
         image_array_sample
     )
 

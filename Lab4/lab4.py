@@ -290,8 +290,8 @@ def histogram_per_pixel(textons, window_size):
         hists (np.array): of size (..., 200).
     
     """
-    h, w, d = img.shape
-    img = img.reshape(h,w,1).astype(np.float32)
+    h, w, d = textons.shape
+    img = textons.reshape(h,w,1).astype(np.float32)
     hists = np.zeros((h,w,200))
     for i in range(h):
         for j in range(w):
